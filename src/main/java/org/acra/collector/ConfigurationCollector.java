@@ -66,9 +66,20 @@ public final class ConfigurationCollector {
     private static SparseArray<String> mUiModeValues = new SparseArray<String>();
 
     private static final HashMap<String, SparseArray<String>> mValueArrays = new HashMap<String, SparseArray<String>>();
+    private static boolean sInitialized = false;
 
-    // Static init
-    static {
+    static private void init() {
+        if (!sInitialized) {
+            synchronized(ConfigurationCollector.class) {
+                if (!sInitialized) {
+                    initImpl();
+                    sInitialized = true;
+                }
+            }
+        }
+    }
+    
+    static private void initImpl() {
         mValueArrays.put(PREFIX_HARDKEYBOARDHIDDEN, mHardKeyboardHiddenValues);
         mValueArrays.put(PREFIX_KEYBOARD, mKeyboardValues);
         mValueArrays.put(PREFIX_KEYBOARDHIDDEN, mKeyboardHiddenValues);
@@ -121,6 +132,7 @@ public final class ConfigurationCollector {
      *         with values replaced by constant names.
      */
     public static String toString(Configuration conf) {
+        init();
         final StringBuilder result = new StringBuilder();
         for (final Field f : conf.getClass().getFields()) {
             try {
